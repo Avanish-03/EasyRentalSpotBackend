@@ -16,7 +16,7 @@ router.post("/register", async (req, res) => {
     console.log("BODY RECEIVED:", req.body);
     const { fullName, email, password, roleName } = req.body;
     console.log("roleName:", roleName);
-    
+
     // Check existing us  er
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -60,11 +60,15 @@ router.post("/register", async (req, res) => {
 // 🔹 LOGIN
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-
+    const { email, password, role } = req.body;
 
     const user = await User.findOne({ email }).populate("role", "name");
     if (!user) return res.status(400).json({ message: "User not found" });
+
+    // ROLE VALIDATION (Important)
+    if (role !== user.role.name) {
+      return res.status(400).json({ message: "Role mismatch" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
@@ -81,7 +85,6 @@ router.post("/login", async (req, res) => {
     console.log("Password entered:", password);
     console.log("Password in DB:", user.password);
     console.log("Match result:", isMatch);
-
 
     res.json({
       message: "Login successful",

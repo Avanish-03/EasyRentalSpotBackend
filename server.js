@@ -19,18 +19,32 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes.js'));
 app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/roles', require('./routes/roles.routes'));
-app.use('/api/properties', require('./routes/properties.routes'));
-app.use('/api/reviews', require('./routes/reviews.routes'));
-app.use('/api/wishlists', require('./routes/wishlists.routes'));
-app.use('/api/notifications', require('./routes/notifications.routes'));
-app.use('/api/admin-actions', require('./routes/adminActions.routes'));
-app.use('/api/reports', require('./routes/reports.routes'));
-app.use('/api/subscriptions', require('./routes/subscriptions.routes'));
-app.use('/api/amenities', require('./routes/amenities.routes'));
-app.use('/api/locations', require('./routes/locations.routes'));
-app.use('/api/property-visits', require('./routes/propertyVisits.routes'));
-app.use('/api/documents', require('./routes/documents.routes'));
-app.use('/api/support', require('./routes/support.routes'));
+// app.use('/api/properties', require('./routes/properties.routes'));
+// app.use('/api/reviews', require('./routes/reviews.routes'));
+// app.use('/api/wishlists', require('./routes/wishlists.routes'));
+// app.use('/api/notifications', require('./routes/notifications.routes'));
+// app.use('/api/admin-actions', require('./routes/adminActions.routes'));
+// app.use('/api/reports', require('./routes/reports.routes'));
+// app.use('/api/subscriptions', require('./routes/subscriptions.routes'));
+// app.use('/api/amenities', require('./routes/amenities.routes'));
+// app.use('/api/locations', require('./routes/locations.routes'));
+// app.use('/api/property-visits', require('./routes/propertyVisits.routes'));
+// app.use('/api/documents', require('./routes/documents.routes'));
+// app.use('/api/support', require('./routes/support.routes'));
+
+app.use("/api/visits", require("./routes/visitRoutes"));
+app.use("/api/dashboard/owner", require("./routes/ownerDashboardRoutes"));
+
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+
+app.use("/api/subscriptions", require("./routes/subscriptionRoutes"));
+
+app.use("/api/profile", require("./routes/profileRoutes"));
+
+app.use("/api/tenant", require("./routes/tenantPropertyRoutes"));
+app.use("/api/tenant", require("./routes/tenantBookingRoutes"));
+app.use("/api/tenant", require("./routes/tenantVisitRoutes"));
+
 
 // Root route
 app.get('/', (req, res) => {
