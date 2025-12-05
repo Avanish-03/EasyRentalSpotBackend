@@ -5,6 +5,7 @@ const Payment = require("../models/Payment");
 const User = require("../models/User");
 const PropertyVisit = require("../models/PropertyVisit");
 const createNotification = require("../utils/createNotification");
+const { sendNotification } = require("../services/notificationService");
 const mongoose = require("mongoose");
 
 // Helper: check overlap between two ranges
@@ -81,13 +82,14 @@ exports.createBooking = async (req, res) => {
     await booking.save();
 
     // Notify owner
-    await createNotification(
+    await sendNotification(
       property.ownerId,
       "booking",
       "New Booking Request",
       `New booking request for "${property.title}" from a tenant.`,
       { bookingId: booking._id, propertyId }
     );
+
 
     // If visitId provided -> mark convertedToBooking on visit (if exists)
     if (visitId && mongoose.Types.ObjectId.isValid(visitId)) {
@@ -179,15 +181,15 @@ exports.getBookingById = async (req, res) => {
   try {
     const tenantId = req.user.id;
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ success:false, message:"Invalid id" });
+    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ success: false, message: "Invalid id" });
 
     const booking = await Booking.findById(id)
       .populate("propertyId")
       .populate("ownerId", "fullName email phone")
       .populate("paymentId");
 
-    if (!booking) return res.status(404).json({ success:false, message:"Booking not found" });
-    if (String(booking.tenantId) !== String(tenantId)) return res.status(403).json({ success:false, message:"Forbidden" });
+    if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+    if (String(booking.tenantId) !== String(tenantId)) return res.status(403).json({ success: false, message: "Forbidden" });
 
     return res.json({ success: true, booking });
   } catch (err) {
@@ -204,12 +206,12 @@ exports.cancelBooking = async (req, res) => {
     const { reason } = req.body;
 
     const booking = await Booking.findById(id).populate("paymentId");
-    if (!booking) return res.status(404).json({ success:false, message:"Booking not found" });
-    if (String(booking.tenantId) !== String(tenantId)) return res.status(403).json({ success:false, message:"Forbidden" });
+    if (!booking) return res.status(404).json({ success: false, message: "Booking not found" });
+    if (String(booking.tenantId) !== String(tenantId)) return res.status(403).json({ success: false, message: "Forbidden" });
 
     // business rule: allow cancel if not completed (you can adapt)
     if (["completed", "cancelled"].includes(booking.status)) {
-      return res.status(400).json({ success:false, message:"Cannot cancel this booking" });
+      return res.status(400).json({ success: false, message: "Cannot cancel this booking" });
     }
 
     booking.status = "cancelled";

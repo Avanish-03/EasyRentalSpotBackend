@@ -43,7 +43,15 @@ app.use("/api/profile", require("./routes/profileRoutes"));
 
 app.use("/api/tenant", require("./routes/tenantPropertyRoutes"));
 app.use("/api/tenant", require("./routes/tenantBookingRoutes"));
+// app.use("/api/tenant", require("./routes/tenantVisitRoutes"));
+app.use("/api/tenant", require("./routes/tenantReviewRoutes"));
+app.use("/api/tenant", require("./routes/tenantPaymentRoutes"));
+app.use("/api/tenant/profile", require("./routes/tenantProfileRoutes"));
+app.use("/api/tenant/notifications", require("./routes/tenantNotificationRoutes"));
+app.use("/api/tenant", require("./routes/tenantDashboardRoutes"));
+app.use("/api/tenant", require("./routes/tenantWishlistRoutes"));
 app.use("/api/tenant", require("./routes/tenantVisitRoutes"));
+app.use("/api/tenant", require("./routes/tenantSubscriptionRoutes"));
 
 
 // Root route
