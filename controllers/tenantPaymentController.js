@@ -5,14 +5,6 @@ const Property = require("../models/Property");
 const createNotification = require("../utils/createNotification");
 const mongoose = require("mongoose");
 
-/*
-  FLOW:
-  - Tenant requests payment -> /initiate (creates Payment record with status 'pending')
-  - Client integrates with payment provider using payment id / details
-  - Provider calls webhook -> /webhook to confirm success/failed
-  - On success: Payment.status='success', Booking.paymentStatus='paid', Booking.status maybe 'confirmed' (business rule)
-  - Refunds handled by admin/owner or webhook -> /refund
-*/
 
 // POST /api/tenant/payments/initiate
 // body: { bookingId, paymentMethod, amount, metadata }
@@ -189,5 +181,26 @@ exports.requestRefund = async (req, res) => {
   } catch (err) {
     console.error("requestRefund err:", err);
     res.status(500).json({ success:false, message:"Server error" });
+  }
+};
+
+// GET /api/tenant/payments/pending
+exports.getPendingPayments = async (req, res) => {
+  try {
+    const tenantId = req.user.id;
+
+    const bookings = await Booking.find({
+      tenantId,
+      status: "approved",
+      paymentStatus: "pending",
+    }).populate("propertyId");
+
+    res.json({
+      success: true,
+      bookings,
+    });
+  } catch (err) {
+    console.error("getPendingPayments err:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };

@@ -11,95 +11,87 @@ exports.getOwnerStats = async (req, res) => {
   try {
     const ownerId = req.user.id;
 
-    // 1. PROPERTY STATS
+    /* ---------- PROPERTY STATS ---------- */
     const totalProperties = await Property.countDocuments({ ownerId });
-    const approvedProperties = await Property.countDocuments({ ownerId, approvalStatus: "approved" });
-    const pendingProperties = await Property.countDocuments({ ownerId, approvalStatus: "pending" });
-    const inactiveProperties = await Property.countDocuments({ ownerId, status: "inactive" });
-
-    // 2. BOOKINGS STATS
-    const totalBookings = await Booking.countDocuments({ ownerId });
-    const pendingBookings = await Booking.countDocuments({ ownerId, status: "pending" });
-    const confirmedBookings = await Booking.countDocuments({ ownerId, status: "confirmed" });
-    const completedBookings = await Booking.countDocuments({ ownerId, status: "completed" });
-
-    // 3. REVENUE STATS
-    const totalRevenueData = await Payment.aggregate([
-      { $match: { receiverId: ownerId, status: "success" } },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
-    ]);
-
-    // 4) ACTIVE SUBSCRIPTION STATUS
-    const activeSub = await Subscription.findOne({
-      userId: ownerId,
-      isActive: true,
-      endDate: { $gte: new Date() }
+    const approvedProperties = await Property.countDocuments({
+      ownerId,
+      approvalStatus: "approved",
+    });
+    const pendingProperties = await Property.countDocuments({
+      ownerId,
+      approvalStatus: "pending",
+    });
+    const inactiveProperties = await Property.countDocuments({
+      ownerId,
+      status: "inactive",
     });
 
-    dashboard.subscriptionStatus = activeSub ? "active" : "inactive";
-    dashboard.planName = activeSub?.planName || null;
-    dashboard.planEndDate = activeSub?.endDate || null;
+    /* ---------- BOOKINGS STATS ---------- */
+    const totalBookings = await Booking.countDocuments({ ownerId });
+    const pendingBookings = await Booking.countDocuments({
+      ownerId,
+      status: "pending",
+    });
+    const confirmedBookings = await Booking.countDocuments({
+      ownerId,
+      status: "confirmed",
+    });
+    const completedBookings = await Booking.countDocuments({
+      ownerId,
+      status: "completed",
+    });
 
-    const totalRevenue = totalRevenueData[0]?.total || 0;
-
-    const last7DaysRevenueData = await Payment.aggregate([
-      {
-        $match: {
-          receiverId: ownerId,
-          status: "success",
-          paymentDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-        }
-      },
-      { $group: { _id: null, total: { $sum: "$amount" } } }
+    /* ---------- REVENUE ---------- */
+    const revenueAgg = await Payment.aggregate([
+      { $match: { receiverId: ownerId, status: "success" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
+    const totalRevenue = revenueAgg[0]?.total || 0;
 
-    const last7DaysRevenue = last7DaysRevenueData[0]?.total || 0;
-
-    // 4. PROPERTY VISITS STATS
+    /* ---------- VISITS ---------- */
     const totalVisits = await PropertyVisit.countDocuments({ ownerId });
-    const completedVisits = await PropertyVisit.countDocuments({ ownerId, status: "completed" });
+    const completedVisits = await PropertyVisit.countDocuments({
+      ownerId,
+      status: "completed",
+    });
 
-    // 5. CONVERSION RATE
     const convertedVisits = await PropertyVisit.countDocuments({
       ownerId,
-      convertedToBooking: true
+      convertedToBooking: true,
     });
 
-    const conversionRate = totalVisits === 0 ? 0 : Math.round((convertedVisits / totalVisits) * 100);
+    const conversionRate =
+      totalVisits === 0
+        ? 0
+        : Math.round((convertedVisits / totalVisits) * 100);
 
-    // Final Response
-    res.json({
+    /* ---------- RESPONSE ---------- */
+    return res.status(200).json({
       success: true,
       stats: {
-        properties: {
-          total: totalProperties,
-          approved: approvedProperties,
-          pending: pendingProperties,
-          inactive: inactiveProperties
-        },
-        bookings: {
-          total: totalBookings,
-          pending: pendingBookings,
-          confirmed: confirmedBookings,
-          completed: completedBookings
-        },
-        revenue: {
-          total: totalRevenue,
-          last7Days: last7DaysRevenue
-        },
-        visits: {
-          total: totalVisits,
-          completed: completedVisits,
-          conversionRate
-        }
-      }
+        totalProperties,
+        approvedProperties,
+        pendingProperties,
+        inactiveProperties,
+        totalBookings,
+        pendingBookings,
+        confirmedBookings,
+        completedBookings,
+        totalRevenue,
+        totalVisits,
+        completedVisits,
+        conversionRate,
+      },
     });
-
   } catch (err) {
-    console.error("Dashboard Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Owner dashboard error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
+
 
 //=============Properties
 exports.getOwnerProperties = async (req, res) => {

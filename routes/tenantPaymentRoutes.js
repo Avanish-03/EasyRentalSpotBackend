@@ -18,4 +18,7 @@ router.get("/payments", auth(["Tenant"]), ctrl.getMyPayments);
 // request refund
 router.post("/payments/:id/refund", auth(["Tenant"]), ctrl.requestRefund);
 
+// routes/tenantPaymentRoutes.js
+router.get("/payments/pending",auth(["Tenant"]),ctrl.getPendingPayments);
+
 module.exports = router;

@@ -11,15 +11,15 @@ const {
 } = require("../controllers/tenantProfileController");
 
 // GET profile
-router.get("/", auth, getTenantProfile);
+router.get("/", auth(["Tenant"]), getTenantProfile);
 
 // UPDATE profile details
-router.put("/", auth, updateTenantProfile);
+router.put("/", auth(["Tenant"]), updateTenantProfile);
 
 // UPDATE avatar
-router.put("/avatar", auth, uploadAvatar.single("avatar"), updateTenantAvatar);
+router.put("/avatar", auth(["Tenant"]), uploadAvatar.single("avatar"), updateTenantAvatar);
 
 // CHANGE password
-router.put("/change-password", auth, changeTenantPassword);
+router.put("/change-password", auth(["Tenant"]), changeTenantPassword);
 
 module.exports = router;
