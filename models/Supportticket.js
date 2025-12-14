@@ -10,4 +10,5 @@ const supportTicketSchema = new mongoose.Schema({
   attachments: [{ type: String }]
 }, { timestamps: true });
 
+
 module.exports = mongoose.model('SupportTicket', supportTicketSchema);

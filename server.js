@@ -19,7 +19,9 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes.js'));
 app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/roles', require('./routes/roles.routes'));
-// app.use('/api/properties', require('./routes/properties.routes'));
+app.use('/api/properties', require('./routes/propertyRoutes.js'));
+app.use("/api/locations", require("./routes/locationRoutes"));
+
 // app.use('/api/reviews', require('./routes/reviews.routes'));
 // app.use('/api/wishlists', require('./routes/wishlists.routes'));
 // app.use('/api/notifications', require('./routes/notifications.routes'));
@@ -27,7 +29,6 @@ app.use('/api/roles', require('./routes/roles.routes'));
 // app.use('/api/reports', require('./routes/reports.routes'));
 // app.use('/api/subscriptions', require('./routes/subscriptions.routes'));
 // app.use('/api/amenities', require('./routes/amenities.routes'));
-// app.use('/api/locations', require('./routes/locations.routes'));
 // app.use('/api/property-visits', require('./routes/propertyVisits.routes'));
 // app.use('/api/documents', require('./routes/documents.routes'));
 // app.use('/api/support', require('./routes/support.routes'));
@@ -52,6 +53,18 @@ app.use("/api/tenant", require("./routes/tenantDashboardRoutes"));
 app.use("/api/tenant", require("./routes/tenantWishlistRoutes"));
 app.use("/api/tenant", require("./routes/tenantVisitRoutes"));
 app.use("/api/tenant", require("./routes/tenantSubscriptionRoutes"));
+
+
+//Admin
+app.use("/api/admin/auth", require("./routes/adminAuthRoutes"));
+app.use("/api/admin/users", require("./routes/adminUserRoutes"));
+app.use("/api/admin/properties", require("./routes/adminPropertyRoutes"));
+app.use("/api/admin/bookings", require("./routes/adminBookingRoutes"));
+app.use("/api/admin/reports", require("./routes/adminReportRoutes"));
+app.use("/api/admin/support", require("./routes/adminSupportRoutes"));
+app.use("/api/admin/reviews", require("./routes/adminReviewRoutes"));
+app.use("/api/admin/notifications", require("./routes/adminNotificationRoutes"));
+app.use("/api/admin/dashboard", require("./routes/adminDashboardRoutes"));
 
 
 // Root route

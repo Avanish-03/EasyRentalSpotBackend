@@ -4,24 +4,29 @@ const propertySchema = new mongoose.Schema({
   ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 
   title: { type: String, required: true },
-  slug: { type: String, unique: true },
+
+  slug: {
+    type: String,
+    unique: true,
+    index: true,
+  },
 
   description: { type: String, required: true },
+
   propertyType: {
     type: String,
     enum: ['apartment', 'house', 'villa', 'studio', 'other'],
     required: true
   },
 
-  // Dashboard filtering + admin approval system
   approvalStatus: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
+
   rejectionReason: { type: String, default: null },
 
-  // Availability status
   status: {
     type: String,
     enum: ['available', 'booked', 'under_maintenance', 'inactive'],
@@ -41,8 +46,7 @@ const propertySchema = new mongoose.Schema({
   area: { type: Number, required: true },
   allowedGuests: { type: Number },
 
-  // For owner dashboard stats
-  views: { type: Number, default: 0 }
+  views: { type: Number, default: 0 },
 
 }, { timestamps: true });
 
