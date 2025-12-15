@@ -1,5 +1,4 @@
 const Payment = require("../models/Payment");
-const Booking = require("../models/Booking");
 
 exports.getOwnerPayments = async (req, res) => {
   try {
@@ -10,6 +9,7 @@ exports.getOwnerPayments = async (req, res) => {
         path: "bookingId",
         populate: { path: "propertyId", select: "title" }
       })
+      .populate("payerId", "fullName email")
       .sort({ paymentDate: -1 });
 
     const revenue = payments
@@ -21,7 +21,6 @@ exports.getOwnerPayments = async (req, res) => {
       revenue,
       payments
     });
-
   } catch (err) {
     console.error("Owner payments error:", err);
     res.status(500).json({ success: false, message: "Server error" });

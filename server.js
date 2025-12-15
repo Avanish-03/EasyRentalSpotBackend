@@ -21,7 +21,9 @@ app.use('/api/users', require('./routes/users.routes'));
 app.use('/api/roles', require('./routes/roles.routes'));
 app.use('/api/properties', require('./routes/propertyRoutes.js'));
 app.use("/api/locations", require("./routes/locationRoutes"));
-app.use("/api", require("./routes/ownerPaymentRoutes"));
+// ✅ MOUNT PROPERLY
+app.use("/api/dashboard/owner",  require("./routes/ownerPaymentRoutes"));
+
 
 app.use("/api/visits", require("./routes/visitRoutes"));
 app.use("/api/dashboard/owner", require("./routes/ownerDashboardRoutes"));
