@@ -7,19 +7,19 @@ const jwt = require("jsonwebtoken");
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ success:false, message:"Email & password required" });
+    if (!email || !password) return res.status(400).json({ success: false, message: "Email & password required" });
 
     const user = await User.findOne({ email }).populate("role", "name");
-    if (!user) return res.status(400).json({ success:false, message:"Invalid credentials" });
+    if (!user) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
     // ensure admin role
     const roleName = (user.role && user.role.name) || user.role || "";
     if (roleName.toLowerCase() !== "admin") {
-      return res.status(403).json({ success:false, message:"Not an admin account" });
+      return res.status(403).json({ success: false, message: "Not an admin account" });
     }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(400).json({ success:false, message:"Invalid credentials" });
+    if (!match) return res.status(400).json({ success: false, message: "Invalid credentials" });
 
     const token = jwt.sign(
       { id: user._id, role: "Admin" },
@@ -36,48 +36,70 @@ exports.login = async (req, res) => {
       avatar: user.avatar || null
     };
 
-    res.json({ success:true, token, user: safeUser });
+    res.json({ success: true, token, user: safeUser });
   } catch (err) {
     console.error("Admin login err:", err);
-    res.status(500).json({ success:false, message:"Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 // GET /api/admin/auth/me
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password").populate("role","name");
-    if (!user) return res.status(404).json({ success:false, message:"User not found" });
+    const user = await User.findById(req.user.id).select("-password").populate("role", "name");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     // ensure admin
     const roleName = (user.role && user.role.name) || user.role || "";
-    if (roleName.toLowerCase() !== "admin") return res.status(403).json({ success:false, message:"Forbidden" });
+    if (roleName.toLowerCase() !== "admin") return res.status(403).json({ success: false, message: "Forbidden" });
 
-    res.json({ success:true, user });
+    res.json({ success: true, user });
   } catch (err) {
     console.error("Admin getProfile err:", err);
-    res.status(500).json({ success:false, message:"Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
 // PUT /api/admin/auth/me
 exports.updateProfile = async (req, res) => {
   try {
-    const allowed = ["fullName","email","phone","avatar"];
+    const allowed = ["fullName", "email", "phone"];
     const updates = {};
-    allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
 
-    // if email changed, ensure unique
-    if (updates.email) {
-      const exist = await User.findOne({ email: updates.email, _id: { $ne: req.user.id } });
-      if (exist) return res.status(400).json({ success:false, message:"Email already in use" });
+    allowed.forEach((k) => {
+      if (req.body[k] !== undefined) {
+        updates[k] = req.body[k];
+      }
+    });
+
+    // ✅ HANDLE AVATAR (multer se)
+    if (req.file) {
+      updates.avatar = `/uploads/avatars/${req.file.filename}`;
     }
 
-    const updated = await User.findByIdAndUpdate(req.user.id, updates, { new:true }).select("-password");
-    res.json({ success:true, user: updated });
+    // email unique check
+    if (updates.email) {
+      const exist = await User.findOne({
+        email: updates.email,
+        _id: { $ne: req.user.id },
+      });
+      if (exist) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Email already in use" });
+      }
+    }
+
+    const updated = await User.findByIdAndUpdate(
+      req.user.id,
+      updates,
+      { new: true }
+    ).select("-password");
+
+    res.json({ success: true, user: updated });
   } catch (err) {
     console.error("Admin updateProfile err:", err);
-    res.status(500).json({ success:false, message:"Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -85,24 +107,24 @@ exports.updateProfile = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    if (!oldPassword || !newPassword) return res.status(400).json({ success:false, message:"Old & new password required" });
+    if (!oldPassword || !newPassword) return res.status(400).json({ success: false, message: "Old & new password required" });
 
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ success:false, message:"User not found" });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     // ensure admin
     const roleName = (user.role && user.role.name) || user.role || "";
-    if (roleName.toLowerCase() !== "admin") return res.status(403).json({ success:false, message:"Forbidden" });
+    if (roleName.toLowerCase() !== "admin") return res.status(403).json({ success: false, message: "Forbidden" });
 
     const match = await bcrypt.compare(oldPassword, user.password);
-    if (!match) return res.status(400).json({ success:false, message:"Old password incorrect" });
+    if (!match) return res.status(400).json({ success: false, message: "Old password incorrect" });
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({ success:true, message:"Password updated" });
+    res.json({ success: true, message: "Password updated" });
   } catch (err) {
     console.error("Admin changePassword err:", err);
-    res.status(500).json({ success:false, message:"Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
