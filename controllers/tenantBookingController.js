@@ -238,3 +238,33 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+//payment Confirmation
+exports.confirmPayment = async (req, res) => {
+  try {
+    const { paymentId, providerTransactionId, status } = req.body;
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment not found" });
+    }
+
+    // 1️⃣ Update payment
+    payment.status = status; // success
+    payment.transactionId = providerTransactionId;
+    payment.paymentDate = new Date();
+    await payment.save();
+
+    // 🔥🔥 MOST IMPORTANT PART 🔥🔥
+    await Booking.findByIdAndUpdate(payment.bookingId, {
+      paymentStatus: "paid",
+      status: "confirmed" // or "completed"
+    });
+
+    return res.json({ success: true, message: "Payment confirmed" });
+  } catch (err) {
+    console.error("confirmPayment err:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+

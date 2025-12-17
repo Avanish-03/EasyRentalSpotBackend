@@ -9,5 +9,7 @@ router.post("/bookings/check-availability", auth(["Tenant"]), ctrl.checkAvailabi
 router.get("/bookings", auth(["Tenant"]), ctrl.getMyBookings);
 router.get("/bookings/:id", auth(["Tenant"]), ctrl.getBookingById);
 router.put("/bookings/:id/cancel", auth(["Tenant"]), ctrl.cancelBooking);
+router.post("/confirm",auth(["Tenant"]),ctrl.confirmPayment);
+
 
 module.exports = router;
